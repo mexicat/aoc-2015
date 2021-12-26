@@ -21,6 +21,7 @@ defmodule AdventOfCode.Day16 do
     |> Enum.find(fn {_, attrs} ->
       Enum.all?(attrs, fn {k, v} -> @needed[k] == v end)
     end)
+    |> elem(0)
   end
 
   def part2(input) do
@@ -35,6 +36,7 @@ defmodule AdventOfCode.Day16 do
         end
       end)
     end)
+    |> elem(0)
   end
 
   def parse_input(input) do
@@ -52,7 +54,7 @@ defmodule AdventOfCode.Day16 do
           {k, String.to_integer(v)}
         end)
 
-      Map.put(acc, String.to_integer(sue), Map.new(attrs))
+      Map.put(acc, sue, Map.new(attrs))
     end)
   end
 end
