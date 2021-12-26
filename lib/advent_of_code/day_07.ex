@@ -41,8 +41,9 @@ defmodule AdventOfCode.Day07 do
   def get(wire) when is_atom(wire) do
     case Agent.get(__MODULE__, fn {_, signals} -> Map.get(signals, wire) end) do
       nil ->
-        Agent.get(__MODULE__, fn {c, _s} -> c end)
-        |> Enum.find(fn {_, c} -> c == wire end)
+        Agent.get(__MODULE__, fn {c, _s} ->
+          Enum.find(c, fn {_, x} -> x == wire end)
+        end)
         |> op()
         |> then(fn val -> set(wire, val) end)
 
