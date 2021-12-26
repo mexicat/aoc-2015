@@ -29,39 +29,34 @@ defmodule AdventOfCode.Day07 do
 
   def run(circuit), do: Enum.each(circuit, &op/1)
 
-  def op({[a], wire}) do
-    set(wire, value(a))
-    value(a)
-  end
+  def op({[a], wire}), do: set(wire, get(a))
+  def op({[:NOT, a], _wire}), do: ~~~get(a) &&& 0xFFFF
+  def op({[a, :AND, b], _wire}), do: get(a) &&& get(b)
+  def op({[a, :OR, b], _wire}), do: get(a) ||| get(b)
+  def op({[a, :LSHIFT, b], _wire}), do: get(a) <<< get(b)
+  def op({[a, :RSHIFT, b], _wire}), do: get(a) >>> get(b)
 
-  def op({[:NOT, a], _wire}), do: ~~~value(a) &&& 0xFFFF
-  def op({[a, :AND, b], _wire}), do: value(a) &&& value(b)
-  def op({[a, :OR, b], _wire}), do: value(a) ||| value(b)
-  def op({[a, :LSHIFT, b], _wire}), do: value(a) <<< value(b)
-  def op({[a, :RSHIFT, b], _wire}), do: value(a) >>> value(b)
+  def get(n) when is_integer(n), do: n
 
-  def value(n) when is_integer(n), do: n
+  def get(wire) when is_atom(wire) do
+    case Agent.get(__MODULE__, fn {_, signals} -> Map.get(signals, wire) end) do
+      nil ->
+        Agent.get(__MODULE__, fn {c, _s} -> c end)
+        |> Enum.find(fn {_, c} -> c == wire end)
+        |> op()
+        |> then(fn val -> set(wire, val) end)
 
-  def value(wire) when is_atom(wire) do
-    val =
-      case Agent.get(__MODULE__, fn {_, signals} -> Map.get(signals, wire) end) do
-        nil ->
-          Agent.get(__MODULE__, fn {c, _s} -> c end)
-          |> Enum.find(fn {_, c} -> c == wire end)
-          |> op()
-
-        x ->
-          x
-      end
-
-    set(wire, val)
-    val
+      x ->
+        x
+    end
   end
 
   def set(wire, val) do
     Agent.update(__MODULE__, fn {circuit, signals} ->
       {circuit, Map.put(signals, wire, val)}
     end)
+
+    val
   end
 
   def parse_input(input) do
