@@ -20,7 +20,6 @@ defmodule AdventOfCode.Day22 do
     [hp, dmg] = parse_input(input)
 
     init_game(hp, dmg)
-    |> update_in([:player, :hp], &(&1 - 1))
     |> play(:player, :decrease)
 
     get_min_spent_mp()
@@ -70,7 +69,7 @@ defmodule AdventOfCode.Day22 do
   def play(game, player, decrease \\ false)
 
   def play(game, :player, decrease) do
-    Enum.each(spells(), fn {spell_name, _} ->
+    Enum.each(spells(), fn spell ->
       try do
         game
         |> then(fn game ->
@@ -80,7 +79,7 @@ defmodule AdventOfCode.Day22 do
         end)
         |> apply_effects()
         |> check_dead()
-        |> cast(spell_name)
+        |> cast(spell)
         |> check_dead()
         |> play(:boss, decrease)
       catch
@@ -104,10 +103,8 @@ defmodule AdventOfCode.Day22 do
     end
   end
 
-  def cast(game, spell_name) do
-    if can_cast?(game, spell_name) do
-      spell = spells()[spell_name]
-
+  def cast(game, {spell_name, spell}) do
+    if can_cast?(game, {spell_name, spell}) do
       # spend mp
       game =
         game
@@ -136,8 +133,7 @@ defmodule AdventOfCode.Day22 do
     end
   end
 
-  def can_cast?(game, spell_name) do
-    spell = spells()[spell_name]
+  def can_cast?(game, {spell_name, spell}) do
     game.player.mp >= spell.mp and spell_name not in Map.keys(game.effects)
   end
 
@@ -168,7 +164,7 @@ defmodule AdventOfCode.Day22 do
       game.boss.hp <= 0 ->
         throw({:dead_boss, game})
 
-      spells() |> Enum.map(&can_cast?(game, elem(&1, 0))) |> Enum.all?(&(&1 == false)) ->
+      spells() |> Enum.map(&can_cast?(game, &1)) |> Enum.all?(&(&1 == false)) ->
         throw({:dead_player, game})
 
       true ->
