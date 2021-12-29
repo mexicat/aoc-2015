@@ -13,9 +13,9 @@ defmodule AdventOfCode.Day24 do
           e <- weights -- [a, b, c, d],
           f <- weights -- [a, b, c, d, e],
           a + b + c + d + e + f == group,
-          do: [a, b, c, d, e, f]
+          do: a * b * c * d * e * f
 
-    combs |> Enum.map(&Enum.product/1) |> Enum.min()
+    Enum.min(combs)
   end
 
   def part2(input) do
@@ -31,9 +31,9 @@ defmodule AdventOfCode.Day24 do
           d <- weights -- [a, b, c],
           e <- weights -- [a, b, c, d],
           a + b + c + d + e == group,
-          do: [a, b, c, d, e]
+          do: a * b * c * d * e
 
-    combs |> Enum.map(&Enum.product/1) |> Enum.min()
+    Enum.min(combs)
   end
 
   def parse_input(input) do
